@@ -1,6 +1,7 @@
-
+#include<windows.h> 
 #include<stdlib.h>
 #include <stdio.h>
+#include <conio.h>
 #include <time.h> 
 #define neck 177
 #define head 1
@@ -9,6 +10,11 @@ int tamanho;
 char vidro[4];
 char mostra (int casa);
 void carrega (int *tela, int t);
+void exibir (int *tela, int t);
+int decidir (int *dx, int *dy, int *cob, int cer);
+int ir (int *a, int *b, int *c, int t, int *da, int *db);
+void gotoxy (int x, int y);
+int *matrix (int *m, int l, int i, int j);
 
 int main()
 {
@@ -29,6 +35,39 @@ int main()
 //	printf("%d\t%c\n%d\t%c\n%d\t%c\n",176,176,177,177,178,178);
 //	for(int c=10; c>-10; c--)
 //		printf("\n%c\t%d\t%d%d",mostra(c),mostra(c),c,tamanho);
+	gotoxy(0,0);
+	int t, dy=0,dx=0,x = (rand()%(cerca-size))+size, y = (rand()%(cerca-size))+size;
+	while(ir(&x,&y,cercado,cerca,&dx,&dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
+	do { 
+		t	= time(0);
+		while(time(0)-t<1 && kbhit() == 0) 	// essa espera de até 1 segundo pode ser interrompida pelo teclado, 
+		{ 	//	if(kbhit()!=0)return 0; 	// assim, caso seja interrompido o programa durante a espera, 
+		} 									// ele será terminado (quase) imediatamente
+		if(ir(&x,&y,cercado,cerca,&dx,&dy) == 1) {
+			gotoxy(0,0);
+			cercado[y][x] = head;
+			exibir(cercado, cerca);
+		}
+	} while (kbhit() == 0);
+	return 0;
+}
+
+
+int ir (int *a, int *b, int *c, int t, int *da, int *db) {
+	int r = decidir(da,db,matrix(c,t,*a,*b),t);
+	if(r == 0 || (da == 0 && db == 0))
+		return 0;
+	(*a) += *da;
+	(*b) += *db;
+	return 1;
+}
+int decidir (int *dx, int *dy, int *cob, int cer) {
+	for(int c = 0; c < tamanho; c++) {
+		if((0 != (*dx) || 0 != (*dy)) && (*matrix(cob,cer,*dx,*dy))%(2*size)!=0)
+			return 1;
+		(*dx) = (rand()%3) - 1;
+		(*dy) = (rand()%3) - 1;
+	}
 	return 0;
 }
 
@@ -40,6 +79,7 @@ char mostra (int casa) {
 	return ' ';//32
 }
 void carrega (int *tela, int t) {
+	gotoxy(0,0);
 	FILE *obs = fopen("obstaculos.txt","r");
 	char f;
 	while (t>0) {
@@ -52,6 +92,23 @@ void carrega (int *tela, int t) {
 		tela++;
 		t--;
 	}
+}
+void exibir (int *tela, int t) {
+	for(int c,l=0; l<t; l++) {
+		for(c=0; c<t; c++) {
+			printf("%c",mostra(*tela));
+			if ((*tela)<=head && (*tela)>-tamanho)
+				(*tela)--;
+			tela++;
+		}
+		printf("\n");
+	}
+}
+void gotoxy (int x, int y) {
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), (COORD){x, y});
+}
+int *matrix (int *m, int l, int i, int j) {
+	return m + l*i + j;
 }
 
 /*
