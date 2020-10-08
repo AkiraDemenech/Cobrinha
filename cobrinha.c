@@ -1,13 +1,13 @@
-#include<windows.h> 
-#include<stdlib.h>
+#include<windows.h>	// necessário para definição da gotoxy
+#include<stdlib.h>	
 #include <stdio.h>
 #include <conio.h>
 #include <time.h> 
-#define neck 177
-#define head 1
-#define size 5
+#define neck 177	//	caractere do pescoço
+#define head 1	//	diferença do pescoço para a cabeça
+#define size 5	// tamanho mínimo da cobrinha e diferença para o máximo
 int tamanho;
-char vidro[4];
+char vidro[4];	// caracteres que não são a cobrinha
 char mostra (int casa);
 void carrega (int *tela, int t);
 void exibir (int *tela, int t);
@@ -23,9 +23,10 @@ int main()
 	vidro[3] = '|';
 	vidro[2] = '/';
 	vidro[1] = '\\';
+	vidro[0] = ' ';
 	int cerca = 6*size;
 	int cercado[cerca][cerca];
-	carrega(cercado,cerca*cerca);
+	carrega(cercado,cerca*cerca); // abre do arquivo
 /*	for(int c=0; c<cerca; c++) {
 		printf("\n");
 		for(int b=0; b<cerca; b++)
@@ -36,35 +37,35 @@ int main()
 //	for(int c=10; c>-10; c--)
 //		printf("\n%c\t%d\t%d%d",mostra(c),mostra(c),c,tamanho);
 	gotoxy(0,0);
-	int t, dy=0,dx=0,x = (rand()%(cerca-size))+size, y = (rand()%(cerca-size))+size;
+	int t, d=1, dy=0,dx=0,x = (rand()%(cerca-size))+size, y = (rand()%(cerca-size))+size;
 	while(ir(&x,&y,cercado,cerca,&dx,&dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
 	do { 
 		t	= time(0);
-		while(time(0)-t<1 && kbhit() == 0) 	// essa espera de até 1 segundo pode ser interrompida pelo teclado, 
+		while(time(0)-t<d && kbhit() == 0) 	// essa espera de até 1 segundo pode ser interrompida pelo teclado, 
 		{ 	//	if(kbhit()!=0)return 0; 	// assim, caso seja interrompido o programa durante a espera, 
 		} 									// ele será terminado (quase) imediatamente
-		if(ir(&x,&y,cercado,cerca,&dx,&dy) == 1) {
+		d = ir(&x,&y,cercado,cerca,&dx,&dy);
+		if(d == 1) {
 			gotoxy(0,0);
 			cercado[y][x] = head;
 			exibir(cercado, cerca);
-		}
+		} else if (rand()%tamanho == head) d = head; // se empacar, quanto maior a cobra, menor a chance de ficar esperando parada.
 	} while (kbhit() == 0);
 	return 0;
 }
 
 
 int ir (int *a, int *b, int *c, int t, int *da, int *db) {
-	int r = decidir(da,db,matrix(c,t,*a,*b),t);
-	if(r == 0 || (da == 0 && db == 0))
-		return 0;
+	if(decidir(da,db,matrix(c,t,*b,*a),t) == 0)
+		return 0; 
 	(*a) += *da;
 	(*b) += *db;
 	return 1;
 }
 int decidir (int *dx, int *dy, int *cob, int cer) {
-	for(int c = 0; c < tamanho; c++) {
-		if((0 != (*dx) || 0 != (*dy)) && (*matrix(cob,cer,*dx,*dy))%(2*size)!=0)
-			return 1;
+	for(int c = 0; c < tamanho; c++) { // tenta mais se a cobra for maior
+		if(((*dx) != 0 || 0 != (*dy)) && (*matrix(cob,cer,*dy,*dx))<-head && rand()%tamanho>c)
+			return 1; // quanto maior a cobra, menos chance há dela mudar de direção sem necessidade
 		(*dx) = (rand()%3) - 1;
 		(*dy) = (rand()%3) - 1;
 	}
@@ -76,7 +77,7 @@ char mostra (int casa) {
 		return vidro[casa/(size+size)]; //casa/10
 	if(casa+tamanho>head)
 		return (char)(neck+((casa==head)?(head):(casa%2)));
-	return ' ';//32
+	return vidro[0];//32
 }
 void carrega (int *tela, int t) {
 	gotoxy(0,0);
@@ -110,29 +111,3 @@ void gotoxy (int x, int y) {
 int *matrix (int *m, int l, int i, int j) {
 	return m + l*i + j;
 }
-
-/*
-Faça um programa para controlar um objeto denominado “cobrinha”,
-sua função é realizar movimentos em qualquer direção 
-(a frente, a cima, a baixo e nas diagonais, nunca retornando), 
-sendo que a decisão de direção é tomada pela cabeça da cobrinha 
-(de forma aleatória) e o restante do corpo deve passar pelos mesmos pontos.
-
-Para compor o corpo da cobrinha use caracteres da tabela ASCII 178, 177 e 176; a cobrinha 
-não deve deixar rastro (ou seja, o último caractere deve ser “branco”),
-considere o corpo da cobrinha com comprimente entre 5 e 10 caracteres (defina o tamanho).
-
-A cobrinha deve estar aprisionada em um "cercado" de 30 linhas e 30 colunas,
-considere as laterais (extremidades do cercado) como sendo um vidro, ou seja,
-estando frente a extremidade a cobrinha deve escolher uma outra rota, pois não pode atravessar o vidro.
-
-Inserir atraso entre cada passo da cobrinha.
-
-Existem obstáculos no interior do cercado que serão fornecidos através de um arquivo texto (veja arquivo exemplo).
-A cobrinha não pode passar através dos obstáculos.
-Como exemplo de obstáculo: uma barra, um quadrado, uma coluna, etc.
-
-** os elementos presentes no cercado (obstáculos) serão inseridos em um arquivo texto (matriz 30x30) com "0" representando espaço livre e "1" representando obstáculo.
-
-O programa deve ser encerrado ao ser teclado qualquer tecla.
-*/
