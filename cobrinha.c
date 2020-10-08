@@ -88,7 +88,7 @@ void carrega (int *tela, int t) {
 			printf("%c",f);
 		} while (f!='0' && f!='1'); /*
 *(tela+(--t)) = (f=='0')?(-tamanho):(size*2*(1+(rand()%3)));
-	*/	*tela = (f=='0')?(-tamanho):(size*2*(1+(rand()%3)));
+	*/	*tela = (f%2==0)?(-tamanho):(size*2*(1+(rand()%3)));
 		tela++;
 		t--;
 	}
@@ -106,6 +106,7 @@ void exibir (int *tela, int t) {
 }
 void gotoxy (int x, int y) { // seta a posição do cursor da linha de comando
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), (COORD){x, y});
+//	system("cls"); // printf("%c[%d;%df",0x1B,y,x);	
 }
 int *matrix (int *m, int l, int i, int j) {
 	return m + l*i + j; // percorrimento da matriz como um vetor em forma de ponteiro
