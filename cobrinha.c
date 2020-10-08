@@ -12,7 +12,7 @@ char mostra (int casa);
 void carrega (int *tela, int t);
 void exibir (int *tela, int t);
 int decidir (int *dx, int *dy, int *cob, int cer);
-int ir (int *a, int *b, int *c, int t, int *da, int *db);
+int ir (int *a, int *b, int *c, int t, int *da, int *db); 
 void gotoxy (int x, int y);
 int *matrix (int *m, int l, int i, int j);
 
@@ -53,7 +53,6 @@ int main()
 	} while (kbhit() == 0);
 	return 0;
 }
-
 
 int ir (int *a, int *b, int *c, int t, int *da, int *db) {
 	if(decidir(da,db,matrix(c,t,*b,*a),t) == 0)
@@ -105,9 +104,9 @@ void exibir (int *tela, int t) {
 		printf("\n");
 	}
 }
-void gotoxy (int x, int y) {
+void gotoxy (int x, int y) { // seta a posição do cursor da linha de comando
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), (COORD){x, y});
 }
 int *matrix (int *m, int l, int i, int j) {
-	return m + l*i + j;
+	return m + l*i + j; // percorrimento da matriz como um vetor em forma de ponteiro
 }
