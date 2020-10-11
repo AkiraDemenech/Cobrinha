@@ -1,7 +1,6 @@
 #include<windows.h>	// necessário para definição da gotoxy
 #include<stdlib.h>	
 #include <stdio.h>
-#include <conio.h>
 #include <time.h> 
 #define neck 177	//	caractere do pescoço
 #define head 1	//	diferença do pescoço para a cabeça
@@ -38,18 +37,21 @@ int main()
 //		printf("\n%c\t%d\t%d%d",mostra(c),mostra(c),c,tamanho);
 	gotoxy(0,0);
 	int t, d=1, dy=0,dx=0,x = (rand()%(cerca-size))+size, y = (rand()%(cerca-size))+size;
-	while(ir(&x,&y,cercado,cerca,&dx,&dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
+	for(t=0; t<tamanho; t++) {	// posiciona o corpo da cobrinha no começo
+		while(ir(&x,&y,cercado,cerca,&dx,&dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
+		cercado[y][x] = head - tamanho + t;
+	}
 	do { 
 		t	= time(0);
-		while(time(0)-t<d && kbhit() == 0) 	// essa espera de até 1 segundo pode ser interrompida pelo teclado, 
-		{ 	//	if(kbhit()!=0)return 0; 	// assim, caso seja interrompido o programa durante a espera, 
-		} 									// ele será terminado (quase) imediatamente
 		d = ir(&x,&y,cercado,cerca,&dx,&dy);
 		if(d == 1) {
 			gotoxy(0,0);
 			cercado[y][x] = head;
 			exibir(cercado, cerca);
 		} else if (rand()%tamanho == head) d = head; // se empacar, quanto maior a cobra, menor a chance de ficar esperando parada.
+		while(time(0)-t<d && kbhit() == 0) 	// essa espera de até 1 segundo pode ser interrompida pelo teclado, 
+		{ 	//	if(kbhit()!=0)return 0; 	// assim, caso seja interrompido o programa durante a espera, 
+		} 									// ele será terminado (quase) imediatamente
 	} while (kbhit() == 0);
 	return 0;
 }
@@ -86,7 +88,7 @@ void carrega (int *tela, int t) {
 		do {
 			f = getc(obs);
 			printf("%c",f);
-		} while (f!='0' && f!='1'); /*
+		} while (f=='\n');/*(f!='0' && f!='1'); 
 *(tela+(--t)) = (f=='0')?(-tamanho):(size*2*(1+(rand()%3)));
 	*/	*tela = (f%2==0)?(-tamanho):(size*2*(1+(rand()%3)));
 		tela++;
@@ -105,7 +107,7 @@ void exibir (int *tela, int t) {
 	}
 }
 void gotoxy (int x, int y) { // seta a posição do cursor da linha de comando
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), (COORD){x, y});
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), (COORD){x, y});
 //	system("cls"); // printf("%c[%d;%df",0x1B,y,x);	
 }
 int *matrix (int *m, int l, int i, int j) {
