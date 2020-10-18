@@ -1,7 +1,7 @@
-#include<windows.h>	// necessário para definição da gotoxy
+#include<windows.h>
 #include<stdlib.h>	
 #include <stdio.h>
-#include <conio.h>	// kbhit
+#include <conio.h>
 #include <time.h> 
 #define neck 177	//	caractere do pescoço
 #define head 1	//	diferença do pescoço para a cabeça
@@ -13,11 +13,26 @@ void carrega (int *tela, int t);
 void exibir (int *tela, int t);
 int decidir (int *dx, int *dy, int *cob, int cer);
 int ir (int *a, int *b, int *c, int t, int *da, int *db); 
-void gotoxy (int x, int y);
-int *matrix (int *m, int l, int i, int j);
+
+struct cobrinha { //	não é exatamente um objeto....
+	int y;
+	int x;
+	int dx;
+	int dy;
+};
+
+void gotoxy (int x, int y) { // seta a posição do cursor da linha de comando
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), (COORD){x, y});
+//	system("cls");	// printf("%c[%d;%dH",0x1B,y,x);	
+}
+
+int *matrix (int *m, int l, int i, int j) {
+	return m + l*i + j; // percorrimento da matriz como um vetor em forma de ponteiro
+}
 
 int main()
 {
+	gotoxy(0,0);
 	srand(time(0)); 
 	tamanho = (rand()%size) + size;
 	vidro[3] = '|';
@@ -27,32 +42,35 @@ int main()
 	int cerca = 6*size;
 	int cercado[cerca][cerca];
 	carrega(cercado,cerca*cerca); // abre do arquivo
-/*	for(int c=0; c<cerca; c++) {
-		printf("\n");
-		for(int b=0; b<cerca; b++)
-			printf("%c",mostra(cercado[c][b]));
-	} 
-	printf("%d",tamanho); */
-//	printf("%d\t%c\n%d\t%c\n%d\t%c\n",176,176,177,177,178,178);
-//	for(int c=10; c>-10; c--)
-//		printf("\n%c\t%d\t%d%d",mostra(c),mostra(c),c,tamanho);
-	gotoxy(0,0);
-	int t, d=1, dy=0,dx=0,x = (rand()%(cerca-size))+size, y = (rand()%(cerca-size))+size;
-	for(t=0; t<tamanho; t++) {	// posiciona o corpo da cobrinha no começo
-		while(ir(&x,&y,cercado,cerca,&dx,&dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
-		cercado[y][x] = head - tamanho + t;
+
+	int t, d, c, cobras = 1 + (rand()%tamanho);
+	struct cobrinha ofidios[cobras];
+	for(c=0; c<cobras; c++) {
+		ofidios[c].dy = 0;
+		ofidios[c].dx = 0;
+		ofidios[c].x = (rand()%(cerca-size))+size; 
+		ofidios[c].y = (rand()%(cerca-size))+size;
+		for(t=0; t<tamanho; t++) {	// posiciona o corpo da cobrinha no começo
+			while(ir(&ofidios[c].x,&ofidios[c].y,cercado,cerca,&ofidios[c].dx,&ofidios[c].dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
+			cercado[ofidios[c].y][ofidios[c].x] = head - tamanho + t; // o tamanho será o mesmo para todas, se fosse diferente, o processamento do "sumiço" do fim do rastro do rabo teria de ser individualizado de alguma forma
+		}
 	}
 	do { 
-		t	= time(0);
-		d = ir(&x,&y,cercado,cerca,&dx,&dy);
-		if(d == 1) {
+		t = time(0);
+		d = 0;
+		for(c=0; c<cobras; c++)
+			if(ir(&ofidios[c].x,&ofidios[c].y,cercado,cerca,&ofidios[c].dx,&ofidios[c].dy) == 1) {
+		//	d+=ir(&ofidios[c].x,&ofidios[c].y,cercado,cerca,&ofidios[c].dx,&ofidios[c].dy);
+				cercado[ofidios[c].y][ofidios[c].x] = head;
+				d += 1;
+			}				
+		if(d > 0) {
 			gotoxy(0,0);
-			cercado[y][x] = head;
 			exibir(cercado, cerca);
+			if(d > head)
+				d = 0;
 		} else if (rand()%tamanho == head) d = head; // se empacar, quanto maior a cobra, menor a chance de ficar esperando parada.
-		while(time(0)-t<d && kbhit() == 0) 	// essa espera de até 1 segundo pode ser interrompida pelo teclado, 
-		{ 	//	if(kbhit()!=0)return 0; 	// assim, caso seja interrompido o programa durante a espera, 
-		} 									// ele será terminado (quase) imediatamente
+		while(time(0)-t<d && kbhit() == 0) 	  			{		} 									
 	} while (kbhit() == 0);
 	return 0;
 }
@@ -82,14 +100,13 @@ char mostra (int casa) {
 	return vidro[0];//32
 }
 void carrega (int *tela, int t) {
-	gotoxy(0,0);
 	FILE *obs = fopen("obstaculos.txt","r");
 	char f;
 	while (t>0) {
 		do {
 			f = getc(obs);
 			printf("%c",f);
-		} while (f=='\n');/*(f!='0' && f!='1'); /*
+		} while (f=='\n');/*(f!='0' && f!='1'); 
 *(tela+(--t)) = (f=='0')?(-tamanho):(size*2*(1+(rand()%3)));
 	*/	*tela = (f%2==0)?(-tamanho):(size*2*(1+(rand()%3)));
 		tela++;
@@ -106,14 +123,4 @@ void exibir (int *tela, int t) {
 		}
 		printf("\n");
 	}
-}
-void gotoxy (int x, int y) {	// seta a posição do cursor da linha de comando
-	printf("\033[%d;%dH",y,x);	// para terminais ANSI, talvez funcione
-	printf("%c[%d;%dH",0x1B,y,x);
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), (COORD){x, y});
-	//	Talvez essa linha acima não compile fora do GCC do Windows.
-//	system("cls");	//	para Windows, limpa a tela toda simplesmente
-}
-int *matrix (int *m, int l, int i, int j) {
-	return m + l*i + j; // percorrimento da matriz como um vetor em forma de ponteiro
 }
