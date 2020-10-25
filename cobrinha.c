@@ -37,7 +37,13 @@ int main()
 //	for(int c=10; c>-10; c--)
 //		printf("\n%c\t%d\t%d%d",mostra(c),mostra(c),c,tamanho);
 	gotoxy(0,0);
-	int t, d=1, dy=0,dx=0,x = (rand()%(cerca-size))+size, y = (rand()%(cerca-size))+size;
+	int t, d=1, dy=0,dx=0,x,y;
+	do {// a posição inicial da cobrinha é aleatória, mas deve ser num bloco vazio.
+		// no cercado 30x30 ao final, não existe nenhuma casa de vidro completamente cercada por outros blocos de vidro, então em qualquer posição, vazia ou não, em que a cobrinha caísse, haveria como em um movimento comum ela sair dali e já estar livre
+		// contudo, se for lido outro cercado e se ela cair em uma casa em que para qualquer lugar onde ela tente ir ela esteja cercada, sorteamos novamente a posição dela até estar tudo bem.
+		x = (rand()%(cerca-size))+size;
+		y = (rand()%(cerca-size))+size;
+	} while (ir(&x,&y,cercado,cerca,&dx,&dy) == 0);
 	for(t=0; t<tamanho; t++) {	// posiciona o corpo da cobrinha no começo
 		while(ir(&x,&y,cercado,cerca,&dx,&dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
 		cercado[y][x] = head - tamanho + t;

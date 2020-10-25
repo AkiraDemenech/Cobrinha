@@ -15,10 +15,7 @@ int decidir (int *dx, int *dy, int *cob, int cer);
 int ir (int *a, int *b, int *c, int t, int *da, int *db); 
 
 struct cobrinha { //	não é exatamente um objeto....
-	int y;
-	int x;
-	int dx;
-	int dy;
+	int y,x, dx,dy;
 };
 
 void gotoxy (int x, int y) { // seta a posição do cursor da linha de comando
@@ -48,8 +45,10 @@ int main()
 	for(c=0; c<cobras; c++) {
 		ofidios[c].dy = 0;
 		ofidios[c].dx = 0;
-		ofidios[c].x = (rand()%(cerca-size))+size; 
-		ofidios[c].y = (rand()%(cerca-size))+size;
+		do {			
+			ofidios[c].x = (rand()%(cerca-size))+size; 
+			ofidios[c].y = (rand()%(cerca-size))+size;
+		} while (ir(&ofidios[c].x,&ofidios[c].y,cercado,cerca,&ofidios[c].dx,&ofidios[c].dy) == 0);
 		for(t=0; t<tamanho; t++) {	// posiciona o corpo da cobrinha no começo
 			while(ir(&ofidios[c].x,&ofidios[c].y,cercado,cerca,&ofidios[c].dx,&ofidios[c].dy) == 0) {	} // se a cobrinha pôde ir a a algum lugar, significa que ela está em algum lugar onde poderia estar.
 			cercado[ofidios[c].y][ofidios[c].x] = head - tamanho + t; // o tamanho será o mesmo para todas, se fosse diferente, o processamento do "sumiço" do fim do rastro do rabo teria de ser individualizado de alguma forma
