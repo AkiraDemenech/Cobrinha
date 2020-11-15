@@ -95,7 +95,9 @@ void carrega (int *tela, int t) {
 		do {
 			f = getc(obs);
 			printf("%c",f);
-		} while (f=='\n');/*(f!='0' && f!='1'); /*
+			if(f==EOF)
+				break;
+		} while (f!='0' && f!='1'); /*
 *(tela+(--t)) = (f=='0')?(-tamanho):(size*2*(1+(rand()%3)));
 	*/	*tela = (f%2==0)?(-tamanho):(size*2*(1+(rand()%3)));
 		tela++;
